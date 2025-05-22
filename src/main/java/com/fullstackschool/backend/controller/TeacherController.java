@@ -36,27 +36,19 @@ public class TeacherController {
     }
 
     @PostMapping
-    public Teacher create(@RequestBody Teacher teacher) {
-        return service.save(teacher);
+    public ResponseEntity<TeacherDTO> create(@RequestBody TeacherDTO dto) {
+        Teacher teacher = teacherMapper.toEntity(dto);
+        Teacher saved = service.save(teacher);
+        return ResponseEntity.ok(teacherMapper.toDTO(saved));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TeacherDTO> update(@PathVariable String id, @RequestBody Teacher details) {
+    public ResponseEntity<TeacherDTO> update(@PathVariable String id, @RequestBody TeacherDTO dto) {
         return service.findById(id)
                 .map(existing -> {
-                    existing.setName(details.getName());
-                    existing.setSurname(details.getSurname());
-                    existing.setEmail(details.getEmail());
-                    existing.setPhone(details.getPhone());
-                    existing.setAddress(details.getAddress());
-                    existing.setImg(details.getImg());
-                    existing.setBloodType(details.getBloodType());
-                    existing.setSex(details.getSex());
-                    existing.setBirthday(details.getBirthday());
-                    existing.setSubjects(details.getSubjects());
-                    existing.setLessons(details.getLessons());
-                    existing.setSchoolClasses(details.getSchoolClasses());
-                    return ResponseEntity.ok(teacherMapper.toDTO(service.save(existing)));
+                    teacherMapper.updateTeacherFromDto(dto, existing);
+                    Teacher updated = service.save(existing);
+                    return ResponseEntity.ok(teacherMapper.toDTO(updated));
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

@@ -41,4 +41,7 @@ public interface TeacherMapper {
                 .map(SchoolClass::getId)
                 .collect(Collectors.toList());
     }
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateTeacherFromDto(TeacherDTO dto, @MappingTarget Teacher entity);
 }
