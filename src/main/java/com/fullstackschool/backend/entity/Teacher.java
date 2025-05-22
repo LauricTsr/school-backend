@@ -49,7 +49,7 @@ public class Teacher {
     private List<Lesson> lessons;
 
     @OneToMany(mappedBy = "supervisor")
-    private List<SchoolClass> classes;
+    private List<SchoolClass> schoolClasses;
 }
 
 

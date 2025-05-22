@@ -1,6 +1,8 @@
 package com.fullstackschool.backend.controller;
 
+import com.fullstackschool.backend.DTO.TeacherDTO;
 import com.fullstackschool.backend.entity.Teacher;
+import com.fullstackschool.backend.mapper.TeacherMapper;
 import com.fullstackschool.backend.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +17,20 @@ public class TeacherController {
     @Autowired
     private TeacherService service;
 
+    @Autowired
+    private TeacherMapper teacherMapper;
+
     @GetMapping
-    public List<Teacher> getAll() {
-        return service.findAll();
+    public ResponseEntity<List<TeacherDTO>> getAll() {
+        List<Teacher> teachers = service.findAll();
+        List<TeacherDTO> dtos = teachers.stream().map(teacherMapper::toDTO).toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Teacher> getById(@PathVariable String id) {
+    public ResponseEntity<TeacherDTO> getById(@PathVariable String id) {
         return service.findById(id)
+                .map(teacherMapper::toDTO)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -33,7 +41,7 @@ public class TeacherController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Teacher> update(@PathVariable String id, @RequestBody Teacher details) {
+    public ResponseEntity<TeacherDTO> update(@PathVariable String id, @RequestBody Teacher details) {
         return service.findById(id)
                 .map(existing -> {
                     existing.setName(details.getName());
@@ -47,8 +55,8 @@ public class TeacherController {
                     existing.setBirthday(details.getBirthday());
                     existing.setSubjects(details.getSubjects());
                     existing.setLessons(details.getLessons());
-                    existing.setClasses(details.getClasses());
-                    return ResponseEntity.ok(service.save(existing));
+                    existing.setSchoolClasses(details.getSchoolClasses());
+                    return ResponseEntity.ok(teacherMapper.toDTO(service.save(existing)));
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
