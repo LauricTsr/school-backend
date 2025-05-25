@@ -1,6 +1,7 @@
 package com.fullstackschool.backend.controller;
 
-import com.fullstackschool.backend.entity.Result;
+import com.fullstackschool.backend.DTO.ResultDTO;
+import com.fullstackschool.backend.mapper.ResultMapper;
 import com.fullstackschool.backend.service.ResultService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,49 +11,39 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/results")
-public class ResultController {
-
-    @Autowired
-    private ResultService service;
+class ResultController {
+    @Autowired private ResultService service;
+    @Autowired private ResultMapper mapper;
 
     @GetMapping
-    public List<Result> getAll() {
-        return service.findAll();
+    public ResponseEntity<List<ResultDTO>> getAll() {
+        return ResponseEntity.ok(service.findAll().stream().map(mapper::toDTO).toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Result> getById(@PathVariable Integer id) {
-        return service.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<ResultDTO> getById(@PathVariable Integer id) {
+        return service.findById(id).map(mapper::toDTO).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public Result create(@RequestBody Result result) {
-        return service.save(result);
+    public ResponseEntity<ResultDTO> create(@RequestBody ResultDTO dto) {
+        return ResponseEntity.ok(mapper.toDTO(service.save(mapper.toEntity(dto))));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Result> update(@PathVariable Integer id, @RequestBody Result details) {
-        return service.findById(id)
-                .map(existing -> {
-                    existing.setScore(details.getScore());
-                    existing.setExam(details.getExam());
-                    existing.setAssignment(details.getAssignment());
-                    existing.setStudent(details.getStudent());
-                    return ResponseEntity.ok(service.save(existing));
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<ResultDTO> update(@PathVariable Integer id, @RequestBody ResultDTO dto) {
+        return service.findById(id).map(existing -> {
+            mapper.updateResultFromDto(dto, existing);
+            return ResponseEntity.ok(mapper.toDTO(service.save(existing)));
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        return service.findById(id)
-                .map(existing -> {
-                    service.delete(id);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return service.findById(id).map(existing -> {
+            service.delete(id);
+            return ResponseEntity.noContent().<Void>build();
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
 

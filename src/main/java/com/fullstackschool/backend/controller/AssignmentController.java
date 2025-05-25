@@ -1,6 +1,7 @@
 package com.fullstackschool.backend.controller;
 
-import com.fullstackschool.backend.entity.Assignment;
+import com.fullstackschool.backend.DTO.AssignmentDTO;
+import com.fullstackschool.backend.mapper.AssignmentMapper;
 import com.fullstackschool.backend.service.AssignmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,49 +11,38 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/assignments")
-public class AssignmentController {
-
-    @Autowired
-    private AssignmentService service;
+class AssignmentController {
+    @Autowired private AssignmentService service;
+    @Autowired private AssignmentMapper mapper;
 
     @GetMapping
-    public List<Assignment> getAll() {
-        return service.findAll();
+    public ResponseEntity<List<AssignmentDTO>> getAll() {
+        return ResponseEntity.ok(service.findAll().stream().map(mapper::toDTO).toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Assignment> getById(@PathVariable Integer id) {
-        return service.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<AssignmentDTO> getById(@PathVariable Integer id) {
+        return service.findById(id).map(mapper::toDTO).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public Assignment create(@RequestBody Assignment assignment) {
-        return service.save(assignment);
+    public ResponseEntity<AssignmentDTO> create(@RequestBody AssignmentDTO dto) {
+        return ResponseEntity.ok(mapper.toDTO(service.save(mapper.toEntity(dto))));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Assignment> update(@PathVariable Integer id, @RequestBody Assignment details) {
-        return service.findById(id)
-                .map(existing -> {
-                    existing.setTitle(details.getTitle());
-                    existing.setStartDate(details.getStartDate());
-                    existing.setDueDate(details.getDueDate());
-                    existing.setLesson(details.getLesson());
-                    existing.setResults(details.getResults());
-                    return ResponseEntity.ok(service.save(existing));
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<AssignmentDTO> update(@PathVariable Integer id, @RequestBody AssignmentDTO dto) {
+        return service.findById(id).map(existing -> {
+            mapper.updateAssignmentFromDto(dto, existing);
+            return ResponseEntity.ok(mapper.toDTO(service.save(existing)));
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        return service.findById(id)
-                .map(existing -> {
-                    service.delete(id);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return service.findById(id).map(existing -> {
+            service.delete(id);
+            return ResponseEntity.noContent().<Void>build();
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

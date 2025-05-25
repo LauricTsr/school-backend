@@ -1,8 +1,8 @@
 package com.fullstackschool.backend.controller;
 
-import com.fullstackschool.backend.DTO.ExamDTO;
-import com.fullstackschool.backend.mapper.ExamMapper;
-import com.fullstackschool.backend.service.ExamService;
+import com.fullstackschool.backend.DTO.SchoolClassDTO;
+import com.fullstackschool.backend.mapper.SchoolClassMapper;
+import com.fullstackschool.backend.service.SchoolClassService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,30 +10,30 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/exams")
-class ExamController {
-    @Autowired private ExamService service;
-    @Autowired private ExamMapper mapper;
+@RequestMapping("/api/school-classes")
+class SchoolClassController {
+    @Autowired private SchoolClassService service;
+    @Autowired private SchoolClassMapper mapper;
 
     @GetMapping
-    public ResponseEntity<List<ExamDTO>> getAll() {
+    public ResponseEntity<List<SchoolClassDTO>> getAll() {
         return ResponseEntity.ok(service.findAll().stream().map(mapper::toDTO).toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ExamDTO> getById(@PathVariable Integer id) {
+    public ResponseEntity<SchoolClassDTO> getById(@PathVariable Integer id) {
         return service.findById(id).map(mapper::toDTO).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<ExamDTO> create(@RequestBody ExamDTO dto) {
+    public ResponseEntity<SchoolClassDTO> create(@RequestBody SchoolClassDTO dto) {
         return ResponseEntity.ok(mapper.toDTO(service.save(mapper.toEntity(dto))));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ExamDTO> update(@PathVariable Integer id, @RequestBody ExamDTO dto) {
+    public ResponseEntity<SchoolClassDTO> update(@PathVariable Integer id, @RequestBody SchoolClassDTO dto) {
         return service.findById(id).map(existing -> {
-            mapper.updateExamFromDto(dto, existing);
+            mapper.updateSchoolClassFromDto(dto, existing);
             return ResponseEntity.ok(mapper.toDTO(service.save(existing)));
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -46,5 +46,4 @@ class ExamController {
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
-
 

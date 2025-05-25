@@ -1,6 +1,7 @@
 package com.fullstackschool.backend.controller;
 
-import com.fullstackschool.backend.entity.Lesson;
+import com.fullstackschool.backend.DTO.LessonDTO;
+import com.fullstackschool.backend.mapper.LessonMapper;
 import com.fullstackschool.backend.service.LessonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,55 +11,39 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/lessons")
-public class LessonController {
-
-    @Autowired
-    private LessonService service;
+class LessonController {
+    @Autowired private LessonService service;
+    @Autowired private LessonMapper mapper;
 
     @GetMapping
-    public List<Lesson> getAll() {
-        return service.findAll();
+    public ResponseEntity<List<LessonDTO>> getAll() {
+        return ResponseEntity.ok(service.findAll().stream().map(mapper::toDTO).toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Lesson> getById(@PathVariable Integer id) {
-        return service.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<LessonDTO> getById(@PathVariable Integer id) {
+        return service.findById(id).map(mapper::toDTO).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public Lesson create(@RequestBody Lesson lesson) {
-        return service.save(lesson);
+    public ResponseEntity<LessonDTO> create(@RequestBody LessonDTO dto) {
+        return ResponseEntity.ok(mapper.toDTO(service.save(mapper.toEntity(dto))));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Lesson> update(@PathVariable Integer id, @RequestBody Lesson details) {
-        return service.findById(id)
-                .map(existing -> {
-                    existing.setName(details.getName());
-                    existing.setDay(details.getDay());
-                    existing.setStartTime(details.getStartTime());
-                    existing.setEndTime(details.getEndTime());
-                    existing.setSubject(details.getSubject());
-                    existing.setSchoolClass(details.getSchoolClass());
-                    existing.setTeacher(details.getTeacher());
-                    existing.setExams(details.getExams());
-                    existing.setAssignments(details.getAssignments());
-                    existing.setAttendances(details.getAttendances());
-                    return ResponseEntity.ok(service.save(existing));
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<LessonDTO> update(@PathVariable Integer id, @RequestBody LessonDTO dto) {
+        return service.findById(id).map(existing -> {
+            mapper.updateLessonFromDto(dto, existing);
+            return ResponseEntity.ok(mapper.toDTO(service.save(existing)));
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        return service.findById(id)
-                .map(existing -> {
-                    service.delete(id);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return service.findById(id).map(existing -> {
+            service.delete(id);
+            return ResponseEntity.noContent().<Void>build();
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
 

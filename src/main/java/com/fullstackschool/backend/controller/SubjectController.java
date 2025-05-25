@@ -1,6 +1,7 @@
 package com.fullstackschool.backend.controller;
 
-import com.fullstackschool.backend.entity.Subject;
+import com.fullstackschool.backend.DTO.SubjectDTO;
+import com.fullstackschool.backend.mapper.SubjectMapper;
 import com.fullstackschool.backend.service.SubjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,47 +11,39 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/subjects")
-public class SubjectController {
-
-    @Autowired
-    private SubjectService service;
+class SubjectController {
+    @Autowired private SubjectService service;
+    @Autowired private SubjectMapper mapper;
 
     @GetMapping
-    public List<Subject> getAll() {
-        return service.findAll();
+    public ResponseEntity<List<SubjectDTO>> getAll() {
+        return ResponseEntity.ok(service.findAll().stream().map(mapper::toDTO).toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Subject> getById(@PathVariable Integer id) {
-        return service.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<SubjectDTO> getById(@PathVariable Integer id) {
+        return service.findById(id).map(mapper::toDTO).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public Subject create(@RequestBody Subject subject) {
-        return service.save(subject);
+    public ResponseEntity<SubjectDTO> create(@RequestBody SubjectDTO dto) {
+        return ResponseEntity.ok(mapper.toDTO(service.save(mapper.toEntity(dto))));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Subject> update(@PathVariable Integer id, @RequestBody Subject details) {
-        return service.findById(id)
-                .map(existing -> {
-                    existing.setName(details.getName());
-                    existing.setTeachers(details.getTeachers());
-                    existing.setLessons(details.getLessons());
-                    return ResponseEntity.ok(service.save(existing));
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<SubjectDTO> update(@PathVariable Integer id, @RequestBody SubjectDTO dto) {
+        return service.findById(id).map(existing -> {
+            mapper.updateSubjectFromDto(dto, existing);
+            return ResponseEntity.ok(mapper.toDTO(service.save(existing)));
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        return service.findById(id)
-                .map(existing -> {
-                    service.delete(id);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return service.findById(id).map(existing -> {
+            service.delete(id);
+            return ResponseEntity.noContent().<Void>build();
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
+

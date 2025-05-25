@@ -16,15 +16,15 @@ public class StudentService {
         this.repo = repo;
     }
 
-    public List<Student> getAll() {
+    public List<Student> findAll() {
         return repo.findAll();
     }
 
-    public Optional<Student> getById(String id) {
+    public Optional<Student> findById(String id) {
         return repo.findById(id);
     }
 
-    public Student create(Student student) {
+    public Student save(Student student) {
         return repo.save(student);
     }
 
