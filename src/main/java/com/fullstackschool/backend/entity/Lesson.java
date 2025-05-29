@@ -20,6 +20,7 @@ public class Lesson {
     private String name;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "lesson_day")
     private Day day;
 
     private LocalDateTime startTime;

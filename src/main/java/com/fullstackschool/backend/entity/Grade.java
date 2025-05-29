@@ -23,6 +23,6 @@ public class Grade {
     private List<Student> students;
 
     @OneToMany(mappedBy = "grade")
-    private List<SchoolClass> classes;
+    private List<SchoolClass> schoolClasses;
 }
 

@@ -16,15 +16,15 @@ public interface LessonMapper {
     @Mapping(target = "examIds", source = "exams")
     @Mapping(target = "assignmentIds", source = "assignments")
     @Mapping(target = "attendanceIds", source = "attendances")
+    @Mapping(target = "teacherId", source = "teacher.id")
+    @Mapping(target = "subjectId", source = "subject.id")
+    @Mapping(target = "classId", source = "schoolClass.id")
     LessonDTO toDTO(Lesson lesson);
 
     @InheritInverseConfiguration
     @Mapping(target = "exams", ignore = true)
     @Mapping(target = "assignments", ignore = true)
     @Mapping(target = "attendances", ignore = true)
-    @Mapping(target = "teacher", ignore = true)
-    @Mapping(target = "subject", ignore = true)
-    @Mapping(target = "schoolClass", ignore = true)
     Lesson toEntity(LessonDTO dto);
 
     default List<Integer> mapExamsToIds(List<Exam> exams) {

@@ -14,14 +14,14 @@ public interface StudentMapper {
 
     @Mapping(target = "attendanceIds", source = "attendances")
     @Mapping(target = "resultIds", source = "results")
+    @Mapping(target = "parentId", source = "parent.id")
+    @Mapping(target = "classId", source = "schoolClass.id")
+    @Mapping(target = "gradeId", source = "grade.id")
     StudentDTO toDTO(Student student);
 
     @InheritInverseConfiguration
     @Mapping(target = "attendances", ignore = true)
     @Mapping(target = "results", ignore = true)
-    @Mapping(target = "parent", ignore = true)
-    @Mapping(target = "schoolClass", ignore = true)
-    @Mapping(target = "grade", ignore = true)
     Student toEntity(StudentDTO dto);
 
     default List<Integer> mapAttendancesToIds(List<Attendance> attendances) {

@@ -1,9 +1,12 @@
 package com.fullstackschool.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fullstackschool.backend.DTO.StudentDTO;
 import com.fullstackschool.backend.DTO.TeacherDTO;
 import com.fullstackschool.backend.entity.Teacher;
 import com.fullstackschool.backend.entity.UserSex;
+import com.fullstackschool.backend.mapper.StudentMapper;
+import com.fullstackschool.backend.mapper.TeacherMapper;
 import com.fullstackschool.backend.repository.TeacherRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @Transactional
 class TeacherControllerTest {
+
+    @Autowired private TeacherMapper mapper;
 
     @Autowired private MockMvc mockMvc;
     @Autowired private TeacherRepository teacherRepository;
@@ -88,6 +93,7 @@ class TeacherControllerTest {
     @Test
     void shouldUpdateTeacher() throws Exception {
         teacher.setName("UpdatedName");
+        TeacherDTO dto = mapper.toDTO(teacher);
         mockMvc.perform(put("/api/teachers/teacher1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(teacher)))
