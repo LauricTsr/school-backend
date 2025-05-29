@@ -7,6 +7,7 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface AnnouncementMapper {
 
+    @Mapping(target = "classId", source = "schoolClass.id")
     AnnouncementDTO toDTO(Announcement announcement);
 
     @InheritInverseConfiguration
