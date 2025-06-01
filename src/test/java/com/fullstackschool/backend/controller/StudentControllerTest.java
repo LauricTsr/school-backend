@@ -5,6 +5,7 @@ package com.fullstackschool.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fullstackschool.backend.DTO.StudentDTO;
+import com.fullstackschool.backend.config.NoSecurityConfig;
 import com.fullstackschool.backend.entity.*;
 import com.fullstackschool.backend.mapper.StudentMapper;
 import com.fullstackschool.backend.repository.GradeRepository;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,9 +29,9 @@ import java.util.Collections;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
+@Import(NoSecurityConfig.class)
 @Transactional
 class StudentControllerTest {
     @Autowired private MockMvc mockMvc;
@@ -122,7 +124,8 @@ class StudentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newStudent)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("student2"));
+                .andExpect(jsonPath("$.id").value("student2")).andExpect(jsonPath("$.classId").exists()).andExpect(jsonPath("$.parentId").exists()).andExpect(jsonPath("$.gradeId").exists());
+        ;
     }
 
     @Test
@@ -133,7 +136,7 @@ class StudentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("UpdatedAlice"));
+                .andExpect(jsonPath("$.name").value("UpdatedAlice")).andExpect(jsonPath("$.classId").exists()).andExpect(jsonPath("$.parentId").exists()).andExpect(jsonPath("$.gradeId").exists());
     }
 
     @Test
