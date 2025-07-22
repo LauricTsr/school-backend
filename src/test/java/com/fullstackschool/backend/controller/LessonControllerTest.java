@@ -2,6 +2,7 @@ package com.fullstackschool.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fullstackschool.backend.DTO.LessonDTO;
+import com.fullstackschool.backend.config.NoSecurityConfig;
 import com.fullstackschool.backend.entity.*;
 import com.fullstackschool.backend.mapper.LessonMapper;
 import com.fullstackschool.backend.repository.*;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,9 +23,9 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
+@Import(NoSecurityConfig.class)
 @Transactional
 class LessonControllerTest {
 
@@ -85,7 +87,7 @@ class LessonControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Geometry"));
+                .andExpect(jsonPath("$.name").value("Geometry")).andExpect(jsonPath("$.classId").exists()).andExpect(jsonPath("$.teacherId").exists()).andExpect(jsonPath("$.subjectId").exists());
     }
 
     @Test
@@ -97,7 +99,7 @@ class LessonControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Updated Algebra"));
+                .andExpect(jsonPath("$.name").value("Updated Algebra")).andExpect(jsonPath("$.classId").exists()).andExpect(jsonPath("$.teacherId").exists()).andExpect(jsonPath("$.subjectId").exists());
     }
 
     @Test

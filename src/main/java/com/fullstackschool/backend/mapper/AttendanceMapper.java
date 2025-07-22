@@ -7,6 +7,8 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface AttendanceMapper {
 
+    @Mapping(target = "studentId", source = "student.id")
+    @Mapping(target = "lessonId", source = "lesson.id")
     AttendanceDTO toDTO(Attendance attendance);
 
     @InheritInverseConfiguration

@@ -1,18 +1,11 @@
 package com.fullstackschool.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fullstackschool.backend.DTO.AnnouncementDTO;
+import com.fullstackschool.backend.DTO.AssignmentDTO;
 import com.fullstackschool.backend.config.NoSecurityConfig;
 import com.fullstackschool.backend.entity.*;
-import com.fullstackschool.backend.mapper.AnnouncementMapper;
-import com.fullstackschool.backend.repository.AnnouncementRepository;
-import com.fullstackschool.backend.repository.GradeRepository;
-import com.fullstackschool.backend.repository.SchoolClassRepository;
-import com.fullstackschool.backend.repository.TeacherRepository;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fullstackschool.backend.mapper.AssignmentMapper;
+import com.fullstackschool.backend.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,76 +31,86 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(NoSecurityConfig.class)
 @Transactional
-public class AnnouncementControllerTest {
+public class AssignmentControllerTest {
 
     @Autowired
-    private AnnouncementMapper mapper;
+    private AssignmentMapper mapper;
     @Autowired private MockMvc mockMvc;
-    @Autowired private AnnouncementRepository repository;
+    @Autowired private AssignmentRepository repository;
     @Autowired private SchoolClassRepository schoolClassRepository;
     @Autowired private TeacherRepository teacherRepository;
     @Autowired private GradeRepository gradeRepository;
+    @Autowired private SubjectRepository subjectRepository;
+    @Autowired private LessonRepository lessonRepository;
     @Autowired private ObjectMapper objectMapper;
 
-    private Announcement announcement;
-    private SchoolClass schoolClass;
+    private Assignment assignment;
+    private Lesson lesson;
 
     @BeforeEach
     void setup() {
         Teacher teacher = new Teacher("teacher1", "teacher1", "John", "Doe", "john@mail.com", "123456", "123 rue", "img.png", "O+", UserSex.MALE, LocalDateTime.now(), LocalDateTime.of(1990, 1, 1, 0, 0), List.of(), List.of(), List.of());
         teacherRepository.saveAndFlush(teacher);
+
+
+        Subject subject = new Subject(null, "Mathematics", List.of(),List.of());
+        subjectRepository.saveAndFlush(subject);
+
         Grade grade = new Grade(null, 1, List.of(), List.of());
         gradeRepository.saveAndFlush(grade);
 
-
-        schoolClass = new SchoolClass(null, "Class A", 30, teacher, List.of(), List.of(), grade, List.of(), List.of());
+        SchoolClass schoolClass = new SchoolClass(null, "Class A", 30, teacher, List.of(), List.of(), grade, List.of(), List.of());
         schoolClassRepository.saveAndFlush(schoolClass);
 
+        lesson = new Lesson(null, "Algebra", Day.MONDAY, LocalDateTime.now(), LocalDateTime.now().plusHours(1),
+                subject, schoolClass, teacher, List.of(), List.of(), List.of());
+        lessonRepository.saveAndFlush(lesson);
 
-        announcement = new Announcement(null, "Announcement1", "first one", LocalDateTime.now(),schoolClass);
+        assignment = new Assignment(null, "Assignment1", LocalDateTime.now(), LocalDateTime.now().plusHours(1), lesson, List.of());
 
-        repository.saveAndFlush(announcement);
+        repository.saveAndFlush(assignment);
     }
 
     @Test
-    void shouldReturnAllAnnouncements() throws Exception {
-        mockMvc.perform(get("/api/announcements"))
+    void shouldReturnAllAssignments() throws Exception {
+        mockMvc.perform(get("/api/assignments"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
-    void shouldReturnAnnouncementById() throws Exception {
-        mockMvc.perform(get("/api/announcements/" + announcement.getId()))
+    void shouldReturnAssignmentById() throws Exception {
+        mockMvc.perform(get("/api/assignments/" + assignment.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Announcement1"));
+                .andExpect(jsonPath("$.title").value("Assignment1"));
     }
 
     @Test
-    void shouldCreateAnnouncement() throws Exception {
-        AnnouncementDTO newAnnouncement = new AnnouncementDTO(null, "Announcement2", "second one", LocalDateTime.now(), schoolClass.getId());
+    void shouldCreateAssignment() throws Exception {
+        AssignmentDTO newAssignment = new AssignmentDTO(null, "Assignment2", LocalDateTime.now(), LocalDateTime.now().plusHours(1), lesson.getId(), List.of());
 
-        mockMvc.perform(post("/api/announcements")
+        mockMvc.perform(post("/api/assignments")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newAnnouncement)))
+                        .content(objectMapper.writeValueAsString(newAssignment)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Announcement2")).andExpect(jsonPath("$.classId").exists());
+                .andExpect(jsonPath("$.title").value("Assignment2")).andExpect(jsonPath("$.lessonId").exists());
     }
 
     @Test
-    void shouldUpdateAnnouncement() throws Exception {
-        announcement.setTitle("TEST");
-        AnnouncementDTO dto = mapper.toDTO(announcement);
-        mockMvc.perform(put("/api/announcements/" + announcement.getId())
+    void shouldUpdateAssignment() throws Exception {
+        assignment.setTitle("TEST");
+        AssignmentDTO dto = mapper.toDTO(assignment);
+        mockMvc.perform(put("/api/assignments/" + assignment.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("TEST")).andExpect(jsonPath("$.classId").exists());
+                .andExpect(jsonPath("$.title").value("TEST")).andExpect(jsonPath("$.lessonId").exists());
     }
 
     @Test
-    void shouldDeleteAnnouncement() throws Exception {
-        mockMvc.perform(delete("/api/announcements/" + announcement.getId()))
+    void shouldDeleteAssignment() throws Exception {
+        mockMvc.perform(delete("/api/assignments/" + assignment.getId()))
                 .andExpect(status().isNoContent());
     }
+
 }

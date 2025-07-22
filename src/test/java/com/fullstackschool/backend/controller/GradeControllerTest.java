@@ -2,6 +2,7 @@ package com.fullstackschool.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fullstackschool.backend.DTO.GradeDTO;
+import com.fullstackschool.backend.config.NoSecurityConfig;
 import com.fullstackschool.backend.entity.Grade;
 import com.fullstackschool.backend.mapper.GradeMapper;
 import com.fullstackschool.backend.repository.GradeRepository;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,9 +25,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
+@Import(NoSecurityConfig.class)
 @Transactional
 public class GradeControllerTest {
 

@@ -7,6 +7,7 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface EventMapper {
 
+    @Mapping(target = "classId", source = "schoolClass.id")
     EventDTO toDTO(Event event);
 
     @InheritInverseConfiguration

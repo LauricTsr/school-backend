@@ -3,6 +3,7 @@ package com.fullstackschool.backend.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fullstackschool.backend.DTO.StudentDTO;
 import com.fullstackschool.backend.DTO.TeacherDTO;
+import com.fullstackschool.backend.config.NoSecurityConfig;
 import com.fullstackschool.backend.entity.Teacher;
 import com.fullstackschool.backend.entity.UserSex;
 import com.fullstackschool.backend.mapper.StudentMapper;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,9 +26,9 @@ import java.util.Collections;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
+@Import(NoSecurityConfig.class)
 @Transactional
 class TeacherControllerTest {
 
@@ -96,7 +98,7 @@ class TeacherControllerTest {
         TeacherDTO dto = mapper.toDTO(teacher);
         mockMvc.perform(put("/api/teachers/teacher1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(teacher)))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("UpdatedName"));
     }

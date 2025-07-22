@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface AssignmentMapper {
 
+    @Mapping(target = "lessonId", source = "lesson.id")
     @Mapping(target = "resultIds", source = "results")
     AssignmentDTO toDTO(Assignment assignment);
 

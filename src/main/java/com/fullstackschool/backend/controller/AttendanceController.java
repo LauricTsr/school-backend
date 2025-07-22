@@ -1,8 +1,11 @@
 package com.fullstackschool.backend.controller;
 
 import com.fullstackschool.backend.DTO.AttendanceDTO;
+import com.fullstackschool.backend.entity.Attendance;
 import com.fullstackschool.backend.mapper.AttendanceMapper;
 import com.fullstackschool.backend.service.AttendanceService;
+import com.fullstackschool.backend.service.LessonService;
+import com.fullstackschool.backend.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +15,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/attendances")
 class AttendanceController {
-    @Autowired private AttendanceService service;
+    @Autowired
+    private AttendanceService service;
+    @Autowired
+    private StudentService studentService;
+    @Autowired
+    private LessonService LessonService;
+
     @Autowired private AttendanceMapper mapper;
 
     @GetMapping
@@ -27,13 +36,18 @@ class AttendanceController {
 
     @PostMapping
     public ResponseEntity<AttendanceDTO> create(@RequestBody AttendanceDTO dto) {
-        return ResponseEntity.ok(mapper.toDTO(service.save(mapper.toEntity(dto))));
+        Attendance attendance = mapper.toEntity(dto);
+        attendance.setStudent(studentService.findById(dto.getStudentId()).orElseThrow());
+        attendance.setLesson(LessonService.findById(dto.getLessonId()).orElseThrow());
+        return ResponseEntity.ok(mapper.toDTO(service.save(attendance)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<AttendanceDTO> update(@PathVariable Integer id, @RequestBody AttendanceDTO dto) {
         return service.findById(id).map(existing -> {
             mapper.updateAttendanceFromDto(dto, existing);
+            existing.setStudent(studentService.findById(dto.getStudentId()).orElseThrow());
+            existing.setLesson(LessonService.findById(dto.getLessonId()).orElseThrow());
             return ResponseEntity.ok(mapper.toDTO(service.save(existing)));
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }

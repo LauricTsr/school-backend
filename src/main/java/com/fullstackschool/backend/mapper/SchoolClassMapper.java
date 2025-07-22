@@ -18,6 +18,8 @@ public interface SchoolClassMapper {
     @Mapping(target = "lessonIds", source = "lessons")
     @Mapping(target = "eventIds", source = "events")
     @Mapping(target = "announcementIds", source = "announcements")
+    @Mapping(target = "supervisorId", source = "supervisor.id")
+    @Mapping(target = "gradeId", source = "grade.id")
     SchoolClassDTO toDTO(SchoolClass schoolClass);
 
     @InheritInverseConfiguration

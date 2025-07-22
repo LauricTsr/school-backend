@@ -1,12 +1,12 @@
 package com.fullstackschool.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fullstackschool.backend.DTO.ParentDTO;
+import com.fullstackschool.backend.DTO.SubjectDTO;
 import com.fullstackschool.backend.config.NoSecurityConfig;
-import com.fullstackschool.backend.entity.Parent;
-import com.fullstackschool.backend.mapper.ParentMapper;
+import com.fullstackschool.backend.entity.Subject;
+import com.fullstackschool.backend.mapper.SubjectMapper;
 import com.fullstackschool.backend.mapper.StudentMapper;
-import com.fullstackschool.backend.repository.ParentRepository;
+import com.fullstackschool.backend.repository.SubjectRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -28,71 +29,60 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(NoSecurityConfig.class)
 @Transactional
-class ParentControllerTest {
+class SubjectControllerTest {
 
-    @Autowired private ParentMapper mapper;
+    @Autowired private SubjectMapper mapper;
     @Autowired private MockMvc mockMvc;
-    @Autowired private ParentRepository repository;
+    @Autowired private SubjectRepository repository;
     @Autowired private ObjectMapper objectMapper;
 
-    private Parent parent;
+    private Subject subject;
 
     @BeforeEach
     void setup() {
-        parent = new Parent();
-        parent.setId("parent1");
-        parent.setUsername("parent1");
-        parent.setName("Jane");
-        parent.setSurname("Doe");
-        parent.setPhone("123456789");
-        parent.setAddress("123 Street");
-        parent.setEmail("jane.doe@example.com");
-        parent.setCreatedAt(LocalDateTime.now());
-        parent.setStudents(Collections.emptyList());
-
-        repository.saveAndFlush(parent);
+        subject = new Subject(null,"Subject1", List.of(), List.of());
+        repository.saveAndFlush(subject);
     }
 
     @Test
-    void shouldReturnAllParents() throws Exception {
-        mockMvc.perform(get("/api/parents"))
+    void shouldReturnAllSubjects() throws Exception {
+        mockMvc.perform(get("/api/subjects"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
-    void shouldReturnParentById() throws Exception {
-        mockMvc.perform(get("/api/parents/parent1"))
+    void shouldReturnSubjectById() throws Exception {
+        mockMvc.perform(get("/api/subjects/" + subject.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("parent1"));
+                .andExpect(jsonPath("$.name").value("Subject1"));
     }
 
     @Test
-    void shouldCreateParent() throws Exception {
-        ParentDTO newParent = new ParentDTO("parent2", "parent2", "Tom", "Smith", "tom@example.com",
-                "456 Avenue", "987654321", LocalDateTime.now(), Collections.emptyList());
+    void shouldCreateSubject() throws Exception {
+        SubjectDTO newSubject = new SubjectDTO(null, "Subject2",List.of(), List.of());
 
-        mockMvc.perform(post("/api/parents")
+        mockMvc.perform(post("/api/subjects")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newParent)))
+                        .content(objectMapper.writeValueAsString(newSubject)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("parent2"));
+                .andExpect(jsonPath("$.name").value("Subject2"));
     }
 
     @Test
-    void shouldUpdateParent() throws Exception {
-        parent.setName("UpdatedJane");
-        ParentDTO dto = mapper.toDTO(parent);
-        mockMvc.perform(put("/api/parents/parent1")
+    void shouldUpdateSubject() throws Exception {
+        subject.setName("TEST");
+        SubjectDTO dto = mapper.toDTO(subject);
+        mockMvc.perform(put("/api/subjects/" + subject.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("UpdatedJane"));
+                .andExpect(jsonPath("$.name").value("TEST"));
     }
 
     @Test
-    void shouldDeleteParent() throws Exception {
-        mockMvc.perform(delete("/api/parents/parent1"))
+    void shouldDeleteSubject() throws Exception {
+        mockMvc.perform(delete("/api/subjects/" + subject.getId()))
                 .andExpect(status().isNoContent());
     }
 }
