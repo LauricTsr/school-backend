@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fullstackschool.backend.DTO.StudentDTO;
 import com.fullstackschool.backend.DTO.TeacherDTO;
 import com.fullstackschool.backend.config.NoSecurityConfig;
+import com.fullstackschool.backend.entity.Subject;
 import com.fullstackschool.backend.entity.Teacher;
 import com.fullstackschool.backend.entity.UserSex;
 import com.fullstackschool.backend.mapper.StudentMapper;
 import com.fullstackschool.backend.mapper.TeacherMapper;
+import com.fullstackschool.backend.repository.SubjectRepository;
 import com.fullstackschool.backend.repository.TeacherRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,12 +24,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 @Import(NoSecurityConfig.class)
 @Transactional
 class TeacherControllerTest {
@@ -36,6 +40,7 @@ class TeacherControllerTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private TeacherRepository teacherRepository;
+    @Autowired private SubjectRepository subjectRepository;
     @Autowired private ObjectMapper objectMapper;
 
     private Teacher teacher;
@@ -55,7 +60,9 @@ class TeacherControllerTest {
         teacher.setSex(UserSex.MALE);
         teacher.setBirthday(LocalDateTime.of(1990, 1, 1, 0, 0));
         teacher.setCreatedAt(LocalDateTime.now());
-        teacher.setSubjects(Collections.emptyList());
+        Subject sub = new Subject(null,"sub1", List.of(),List.of());
+        subjectRepository.saveAndFlush(sub);
+        teacher.setSubjects(List.of(sub));
         teacher.setLessons(Collections.emptyList());
         teacher.setSchoolClasses(Collections.emptyList());
 
@@ -74,7 +81,8 @@ class TeacherControllerTest {
     void shouldReturnTeacherById() throws Exception {
         mockMvc.perform(get("/api/teachers/teacher1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("teacher1"));
+                .andExpect(jsonPath("$.id").value("teacher1"))
+                .andExpect(jsonPath("$.subjectNames[0]").value("sub1"));
     }
 
     @Test
@@ -82,7 +90,7 @@ class TeacherControllerTest {
         TeacherDTO newTeacher = new TeacherDTO(
                 "teacher2", "jane.doe", "Jane", "Doe", "jane@example.com", "987654321",
                 "456 Side St","img.png", "A+", UserSex.FEMALE, LocalDateTime.now(), LocalDateTime.of(1992, 2, 2, 0, 0),
-                Collections.emptyList(), Collections.emptyList(), Collections.emptyList()
+                Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList()
         );
 
         mockMvc.perform(post("/api/teachers")

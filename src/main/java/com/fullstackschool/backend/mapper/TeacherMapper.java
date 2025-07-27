@@ -13,9 +13,12 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface TeacherMapper {
 
-    @Mapping(target = "subjectIds", source = "subjects")
-    @Mapping(target = "lessonIds", source = "lessons")
-    @Mapping(target = "classIds", source = "schoolClasses")
+    @Mapping(target = "subjectNames", expression = "java(mapSubjectsToNames(teacher.getSubjects()))")
+    @Mapping(target = "lessonNames", expression = "java(mapLessonsToNames(teacher.getLessons()))")
+    @Mapping(target = "classNames", expression = "java(mapClassesToNames(teacher.getSchoolClasses()))")
+    @Mapping(target = "subjectIds", expression = "java(mapSubjectsToIds(teacher.getSubjects()))")
+    @Mapping(target = "lessonIds", expression = "java(mapLessonsToIds(teacher.getLessons()))")
+    @Mapping(target = "classIds", expression = "java(mapClassesToIds(teacher.getSchoolClasses()))")
     TeacherDTO toDTO(Teacher teacher);
 
     @InheritInverseConfiguration
@@ -30,16 +33,28 @@ public interface TeacherMapper {
                 .collect(Collectors.toList());
     }
 
+    default List<String> mapSubjectsToNames(List<Subject> subjects) {
+        return subjects == null ? null : subjects.stream().map(Subject::getName).toList();
+    }
+
     default List<Integer> mapLessonsToIds(List<Lesson> lessons) {
         return lessons == null ? null : lessons.stream()
                 .map(Lesson::getId)
                 .collect(Collectors.toList());
     }
 
+    default List<String> mapLessonsToNames(List<Lesson> lessons) {
+        return lessons == null ? null : lessons.stream().map(Lesson::getName).toList();
+    }
+
     default List<Integer> mapClassesToIds(List<SchoolClass> classes) {
         return classes == null ? null : classes.stream()
                 .map(SchoolClass::getId)
                 .collect(Collectors.toList());
+    }
+
+    default List<String> mapClassesToNames(List<SchoolClass> classes) {
+        return classes == null ? null : classes.stream().map(SchoolClass::getName).toList();
     }
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

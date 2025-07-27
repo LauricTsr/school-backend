@@ -23,6 +23,9 @@ public class TeacherDTO {
     private LocalDateTime createdAt;
     private LocalDateTime birthday;
     private List<Integer> subjectIds;
+    private List<String> subjectNames;
     private List<Integer> classIds;
+    private List<String> classNames;
     private List<Integer> lessonIds;
+    private List<String> lessonNames;
 }
