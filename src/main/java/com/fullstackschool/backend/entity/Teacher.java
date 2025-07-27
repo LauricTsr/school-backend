@@ -11,6 +11,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"schoolClasses", "lessons", "subjects"})
 public class Teacher {
 
     @Id

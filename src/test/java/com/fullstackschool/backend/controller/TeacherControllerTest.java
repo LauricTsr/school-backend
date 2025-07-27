@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fullstackschool.backend.DTO.StudentDTO;
 import com.fullstackschool.backend.DTO.TeacherDTO;
 import com.fullstackschool.backend.config.NoSecurityConfig;
-import com.fullstackschool.backend.entity.Subject;
-import com.fullstackschool.backend.entity.Teacher;
-import com.fullstackschool.backend.entity.UserSex;
+import com.fullstackschool.backend.entity.*;
 import com.fullstackschool.backend.mapper.StudentMapper;
 import com.fullstackschool.backend.mapper.TeacherMapper;
+import com.fullstackschool.backend.repository.GradeRepository;
+import com.fullstackschool.backend.repository.SchoolClassRepository;
 import com.fullstackschool.backend.repository.SubjectRepository;
 import com.fullstackschool.backend.repository.TeacherRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +41,8 @@ class TeacherControllerTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private TeacherRepository teacherRepository;
     @Autowired private SubjectRepository subjectRepository;
+    @Autowired private GradeRepository gradeRepository;
+    @Autowired private SchoolClassRepository schoolClassRepository;
     @Autowired private ObjectMapper objectMapper;
 
     private Teacher teacher;
@@ -64,7 +66,12 @@ class TeacherControllerTest {
         subjectRepository.saveAndFlush(sub);
         teacher.setSubjects(List.of(sub));
         teacher.setLessons(Collections.emptyList());
-        teacher.setSchoolClasses(Collections.emptyList());
+        Grade grade = new Grade(null, 1, List.of(), List.of());
+        gradeRepository.saveAndFlush(grade);
+        teacherRepository.save(teacher);
+        SchoolClass schoolClass = new SchoolClass(null,"class1",30, teacher,List.of(), List.of(), grade, List.of(), List.of());
+        schoolClassRepository.saveAndFlush(schoolClass);
+        teacher.setSchoolClasses(List.of(schoolClass));
 
         teacherRepository.save(teacher);
         teacherRepository.flush();
@@ -79,10 +86,12 @@ class TeacherControllerTest {
 
     @Test
     void shouldReturnTeacherById() throws Exception {
+        teacher.getSchoolClasses().forEach(sc -> System.out.println("Id: "+ sc.getId()+" Nom: " + sc.getName()));
         mockMvc.perform(get("/api/teachers/teacher1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("teacher1"))
-                .andExpect(jsonPath("$.subjectNames[0]").value("sub1"));
+                .andExpect(jsonPath("$.subjectNames[0]").value("sub1"))
+                .andExpect(jsonPath("$.classNames[0]").value("class1"));
     }
 
     @Test
